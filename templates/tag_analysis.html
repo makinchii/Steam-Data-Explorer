@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Tag Analysis – Steam Data Explorer{% endblock %}
+
+{% block content %}
+<style>
+.chart-wrapper {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.chart-container {
+  flex: 1 1 800px; /* Larger width for clarity */
+  height: 650px;   /* Increased height to comfortably fit labels */
+  max-width: 900px;
+  padding: 10px;
+}
+</style>
+<div class="main-content">
+  <div class="section-title">Steam Tag Frequency Analysis</div>
+  <div class="chart-wrapper">
+    <div class="chart-container">
+      <canvas id="topTagsChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="otherTagsChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <div class="section-title">Top 15 Tags Distribution</div>
+      <canvas id="tagPieChart"></canvas>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='tag_analysis.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const topTags = {{ top_tags | tojson }};
+    const otherTags = {{ other_tags | tojson }};
+    drawDualTagCharts(topTags, otherTags);
+  });
+</script>
+{% endblock %}
+
+<style>
+.chart-wrapper {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.chart-container {
+  flex: 1 1 1200px;
+  height: 650px;
+  max-width: 1400px;
+  padding: 10px;
+}
+</style>

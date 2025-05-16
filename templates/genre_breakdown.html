@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Genre Breakdown – Steam Data Explorer{% endblock %}
+
+{% block content %}
+<style>
+.chart-wrapper {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.chart-container {
+  flex: 1 1 800px; /* Larger width for clarity */
+  height: 650px;   /* Increased height to comfortably fit labels */
+  max-width: 900px;
+  padding: 10px;
+}
+</style>
+<div class="main-content">
+  <div class="section-title">Steam Genre Frequency Analysis</div>
+  <div class="chart-wrapper">
+    <div class="chart-container">
+      <canvas id="topGenresChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="otherGenresChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <div class="section-title">Top 15 Genre Distribution</div>
+      <canvas id="genrePieChart" width="400" height="400" style="margin-top: 2rem;"></canvas>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='genre_breakdown.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const topGenres = {{ top_genres | tojson }};
+    const otherGenres = {{ other_genres | tojson }};
+    drawDualGenreCharts(topGenres, otherGenres);
+  });
+</script>
+{% endblock %}
+
+<style>
+.chart-wrapper {
+  display: flex;
+  gap: 25px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.chart-container {
+  flex: 1 1 600px;
+  height: 600px; /* Increased height for better readability */
+  max-width: 800px; /* Increased max-width for clarity */
+  padding: 10px;
+}
+</style>

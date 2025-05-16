@@ -1,0 +1,556 @@
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ==========================================================================
+   Variables & Resets
+   ========================================================================== */
+
+:root {
+    --steam-bg-dark:    #1b2838;
+    --steam-bg-darker:  #171a21;
+    --steam-sec-bg:     #2a475e;
+    --steam-highlight:  #66c0f4;
+    --steam-text:       #c6d4df;
+    --steam-text-dark: #303030;
+    --steam-text-light: #e9eaeb;
+    --steam-bg-grey: #e9f6fa;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: var(--steam-bg-dark);
+    color: var(--steam-text);
+}
+
+/* ==========================================================================
+   Header & Navigation
+   ========================================================================== */
+
+.header {
+    background-color: var(--steam-bg-darker);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.logo {
+    color: var(--steam-highlight);
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    margin-right: 30px;
+    flex: 0 0 auto;
+}
+
+.logo-img {
+    width: 32px;
+    height: auto;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--steam-highlight);
+}
+.logo-link:hover {
+  color: var(--steam-text-light);
+}
+.logo-link {
+  margin-right: 8px;  /* give space between icon and text */
+}
+
+.main-nav {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+    justify-content: flex-start;
+    flex: 1 1 auto;
+}
+
+.main-nav a {
+    color: var(--steam-text);
+    text-decoration: none;
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: bold;
+    padding: 8px 0;
+    letter-spacing: 0.5px;
+}
+
+.main-nav a:hover {
+    color: var(--steam-highlight);
+}
+
+.dropdown-container {
+    position: relative;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: var(--steam-bg-darker);
+    min-width: 200px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    border-radius: 3px;
+    padding: 10px 0;
+    z-index: 1;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 12px 16px;
+    color: var(--steam-text);
+    text-decoration: none;
+    font-weight: normal;
+    text-align: left;
+}
+
+.dropdown-menu a:hover {
+    background-color: var(--steam-sec-bg);
+}
+
+.dropdown-container:hover .dropdown-menu {
+    display: block;
+}
+
+.user-actions {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-actions a {
+    color: var(--steam-text);
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.api-btn {
+    background-color: #5c7e10;
+    padding: 7px 15px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* ==========================================================================
+   Main Content & Sections
+   ========================================================================== */
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-title {
+    color: var(--steam-text-light);
+    font-size: 18px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--steam-highlight);
+    padding-bottom: 5px;
+}
+
+/* ── Category wrapper ───────────────────────────────────────────────── */
+.category-section {
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--steam-highlight);
+}
+
+.category-title {
+  font-size: 1.75rem;
+  color: var(--steam-text-light);
+  margin-bottom: 1rem;
+}
+
+/* ── Featured game ───────────────────────────────────────────────────── */
+.featured-game {
+  display: flex;
+  background: var(--steam-sec-bg);
+  border: 1px solid var(--steam-highlight);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.featured-game .game-image {
+  width: 100%;
+  max-height: 280px;
+  overflow: hidden;
+}
+
+.featured-game .game-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.sub-game-card .game-info {
+  height: 15%;
+  padding: 6px;
+  text-align: center;
+}
+
+.sub-games {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.sub-game-card {
+  width: calc(25% - 0.75rem);
+  min-width: 220px;
+  background: var(--steam-bg-dark);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 0 8px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.sub-game-card .game-image {
+  height: 85%;
+  overflow: visible;
+}
+
+.sub-game-card .game-image img {
+  width: 100%;
+  height: 150%;
+  object-fit: fill;
+  display: block;
+}
+
+.sub-game-card .game-name {
+  padding-top: 40px;
+  font-size: 12px;
+  color: var(--steam-text-light);
+  font-weight: bold;
+  object-fit: cover;
+}
+
+/* ==========================================================================
+   Search Bar & Results Helpers
+   ========================================================================== */
+
+.search-bar {
+    background-color: var(--steam-sec-bg);
+    padding: 7px 12px;
+    border-radius: 3px;
+    width: 250px;
+}
+
+.search-bar input {
+    background: transparent;
+    border: none;
+    color: var(--steam-text);
+    width: 100%;
+    font-size: 14px;
+    outline: none;
+}
+
+.search-bar input::placeholder {
+    color: #7193a6;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: var(--steam-highlight);
+}
+
+.error-message {
+    background-color: rgba(204, 51, 51, 0.2);
+    border-left: 3px solid #cc3333;
+    padding: 10px 15px;
+    margin: 10px 0;
+    color: #e88;
+}
+
+.no-results {
+    padding: 20px;
+    text-align: center;
+    color: var(--steam-text-light);
+}
+
+.search-results {
+    margin-top: 20px;
+}
+
+.search-options {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.search-type-option {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* ==========================================================================
+   Game Card
+   ========================================================================== */
+
+.game-card {
+    background-color: var(--steam-bg-dark);
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    transition: transform 0.2s ease-in-out;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: stretch;
+    min-height: 215px;
+    gap: 20px;
+}
+
+.game-card:hover {
+   box-shadow: 0 0 15px rgba(102, 192, 244, 0.4);
+   transform: scale(1.02);
+   transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.game-image {
+  flex: 0 0 40%;
+  max-width: 460px;
+  overflow: hidden;
+  position: relative;
+}
+
+.game-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --------------------------------------------------------------------------
+   Game Info
+   -------------------------------------------------------------------------- */
+
+.game-info {
+    flex-grow: 1;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+}
+
+.top-content {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+/* Tags */
+.game-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.steam-tag {
+    padding: 3px 8px;
+    font-size: 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.category-tag {
+    background-color: rgba(103, 193, 245, 0.2);
+    color: #67c1f5;
+    border: 1px solid #67c1f5;
+}
+
+.category-tag:hover {
+    background-color: #67c1f5;
+    color: var(--steam-bg-dark);
+}
+
+.genre-tag {
+    background-color: rgba(103, 245, 132, 0.2);
+    color: #67f584;
+    border: 1px solid #67f584;
+}
+
+.genre-tag:hover {
+    background-color: #67f584;
+    color: var(--steam-bg-dark);
+}
+
+/* Bottom section: meta + actions */
+.bottom-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0,0,0,0.2);
+}
+
+/* Meta (release date + price) */
+.game-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 14px;
+}
+
+.release-date {
+    display: inline-block;
+    background-color: var(--steam-sec-bg);
+    color: var(--steam-text-light);
+    padding: 4px 6px;
+    border-radius: 2px;
+    font-size: 14px;
+}
+
+.release-date .value {
+    font-weight: 500;
+}
+
+/* Price */
+.price {
+    background-color: #223746;
+    color: #fff;
+    padding: 4px 6px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.discount {
+    background-color: #4c6b22;
+    color: #a4d007;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: #738895;
+}
+
+.final-price,
+.free {
+    color: #beee11;
+    font-weight: bold;
+}
+
+/* Actions */
+.game-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+
+.game-actions a {
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 2px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background 0.2s ease;
+}
+
+.visit-steam {
+    background: linear-gradient(to bottom, #2c3e4c 5%, #1f2933 95%);
+    color: var(--steam-text);
+}
+
+.visit-steam:hover {
+    background: linear-gradient(to bottom, #3d5a73 5%, #2a3a47 95%);
+    color: #fff;
+}
+
+.visit-steam i {
+    margin-right: 5px;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+.footer {
+  flex-shrink: 0;
+  margin-top: auto;
+  background-color: var(--steam-bg-darker);
+  padding: 20px;
+  text-align: center;
+  font-size: 12px;
+  color: #8f98a0;
+}
+
+/* ==========================================================================
+   Tooltip Popup
+   ========================================================================== */
+#tooltip {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  display: none;
+  z-index: 1000;
+  pointer-events: none;
+  background: var(--steam-bg-grey);
+  color: var(--steam-text-dark);
+  border-radius: 4px;
+  padding: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  max-width: 320px;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#tooltip .tooltip-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+#tooltip .tooltip-img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 2px;
+}
+
+#tooltip .tooltip-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  max-height: none;
+  overflow: visible;
+}
+
+

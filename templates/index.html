@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Home – Steam Data Explorer{% endblock %}
+
+{% block content %}
+<div class="main-content">
+  <div id="content-area">
+    <div id="error-container"></div>
+
+    {% for category, games in categories.items() %}
+      <section class="category-section">
+        <div class="section-title">{{ category_titles[category] }}</div>
+
+        {% if games %}
+          {# Featured card with border removed #}
+          {# Featured Game #}
+          {% set featured = games[0] %}
+          <div class="featured-game game-card"
+               data-appid="{{ featured.appid }}">
+            <div class="game-image">
+              {% if featured.appdetail and featured.appdetail.success %}
+                <img src="{{ featured.appdetail.data.header_image }}" alt="{{ featured.name }}">
+              {% else %}
+                <img src="{{ featured.logo }}" alt="{{ featured.name }}">
+              {% endif %}
+            </div>
+            <div class="game-info">
+              <h3>{{ featured.name }}</h3>
+              <h3>{{ featured.price_overview }}</h3>
+            </div>
+          </div>
+
+          {# Sub-Games #}
+          <div class="sub-games">
+            {% for game in games[1:5] %}
+              <div class="sub-game-card game-card"
+                   data-appid="{{ game.appid }}">
+                <div class="game-image">
+                  {% if game.appdetail and game.appdetail.success and game.appdetail.data.capsule %}
+                    <img src="{{ game.appdetail.data.capsule }}" alt="{{ game.name }}">
+                  {% elif game.appdetail and game.appdetail.success %}
+                    <img src="{{ game.appdetail.data.header_image }}" alt="{{ game.name }}">
+                  {% else %}
+                    <img src="{{ game.logo }}" alt="{{ game.name }}">
+                  {% endif %}
+                </div>
+                <div class="game-info">
+                  <p class="game-name">{{ game.name }}</p>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+
+        {% endif %}
+      </section>
+    {% endfor %}
+
+  </div>
+</div>
+{% endblock %}

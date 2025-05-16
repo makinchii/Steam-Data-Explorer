@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results – Steam Data Explorer{% endblock %}
+
+{% block content %}
+
+  <div id="error-container"></div>
+  <div id="search-results"></div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='search.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Price Analysis – Steam Data Explorer{% endblock %}
+
+{% block content %}
+<style>
+.chart-wrapper {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.chart-container {
+  flex: 1 1 800px;
+  height: 650px;
+  max-width: 900px;
+  padding: 10px;
+}
+</style>
+
+<div class="main-content">
+  <div class="section-title">Steam Price Distribution</div>
+  <div class="chart-wrapper">
+    <div class="chart-container">
+      <canvas id="priceHistogramChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="pricePieChart"></canvas>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='price.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const priceBuckets = {{ price_buckets | tojson }};
+    drawPriceCharts(priceBuckets);
+  });
+</script>
+{% endblock %}

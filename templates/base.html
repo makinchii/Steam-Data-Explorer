@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <title>{% block title %}Steam Data Explorer{% endblock %}</title>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">
+      <a href="{{ url_for('index') }}" class="logo-link">
+        <img src="{{ url_for('static', filename='steam-logo-transparent.png') }}"
+             alt="Steam Logo"
+             class="logo-img">
+        STEAM DATA EXPLORER
+      </a>
+    </div>
+    <div class="main-nav">
+      <div class="dropdown-container">
+        <a href="#" id="nav-analytics">Analytics</a>
+        <div class="dropdown-menu">
+          <a href="#" data-action="price-analysis">Price Analysis</a>
+          <a href="#" data-action="genre-breakdown">Genre Breakdown</a>
+          <a href="#" data-action="tag-analysis">Tag Analysis</a>
+        </div>
+      </div>
+      <div class="dropdown-container">
+        <a href="#" id="nav-search">Search Options</a>
+        <div class="dropdown-menu">
+          <a href="#" data-action="Name or App ID">By Name or App ID</a>
+          <a href="#" data-action="By Developer">By Developer</a>
+          <a href="#" data-action="By Genre">By Genre</a>
+          <a href="#" data-action="By Tag">By Tag</a>
+        </div>
+      </div>
+    </div>
+    <div class="user-actions">
+      <form id="search-form" action="{{ url_for('search') }}" method="get">
+        <div class="search-bar">
+          <input type="text" name="q" id="app-search" placeholder="Search by App ID or Name">
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="main-content">
+    {% block content %}{% endblock %}
+  </div>
+
+  <div class="footer">
+    © 2025 Steam Data Explorer. This is a data analysis tool. Not affiliated with Valve Corporation.
+  </div>
+
+  <script src="{{ url_for('static', filename='nav.js') }}"></script>
+  {% block scripts %}{% endblock %}
+  <div id="tooltip" class="tooltip"></div>
+</body>
+</html>
