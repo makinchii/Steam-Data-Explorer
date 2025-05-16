@@ -1,6 +1,17 @@
 {% extends "base.html" %}
 
 {% block title %}Search Results – Steam Data Explorer{% endblock %}
+  <div class="search-options">
+  {% if search_type == 'developer' %}
+    <h2>Search by Developer</h2>
+  {% elif search_type == 'genre' %}
+    <h2>Search by Genre</h2>
+  {% elif search_type == 'tag' %}
+    <h2>Search by Tag</h2>
+  {% else %}
+    <h2>Search by Name or App ID</h2>
+  {% endif %}
+  </div>
 
 {% block content %}
 

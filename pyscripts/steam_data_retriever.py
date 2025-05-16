@@ -342,6 +342,8 @@ def test_search():
     app_details = retriever.get_app_details(id)
     print(app_details)
 
+    print(retriever.apps_dict)
+
     if app_details:
         print_log(retriever.search_apps_by_name(app_details.get('name')))
         for developer in app_details.get('developers'):

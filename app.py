@@ -28,22 +28,47 @@ def index():
     seen_ids = set()
     categories = {}
 
-    for category, games in raw_categories.items():
-        unique_games = []
-        for game in games:
-            app_id = game.get('appid')
-            if app_id and app_id not in seen_ids:
-                seen_ids.add(app_id)
-                unique_games.append(game)
-        categories[category] = unique_games
+    q = request.args.get('q')
+    search_type = request.args.get('type', 'app-id')
 
-    category_titles = {
-        'globaltopsellers': 'Global Top Sellers',
-        'specials': 'Special Offers',
-        'popularcomingsoon': 'Popular: Coming Soon',
-        'topsellers': 'Top Sellers',
-        'popularnew': 'Popular: New'
-    }
+    retriever = SteamDataRetriever()
+
+    if q:
+        if search_type == 'app-id' and q.isdigit():
+            result = retriever.get_app_details(int(q))
+            if result:
+                categories['search'] = [result]
+        elif search_type == 'name':
+            categories['search'] = retriever.search_apps_by_name(q)
+        elif search_type == 'developer':
+            categories['search'] = retriever.get_apps_by_developer(q)
+        elif search_type == 'genre':
+            categories['search'] = retriever.get_apps_with_genre(q)
+        elif search_type == 'tag':
+            categories['search'] = retriever.get_apps_with_tag(q)
+        else:
+            categories['search'] = []
+
+        category_titles = {
+            'search': f'Search Results ({search_type})'
+        }
+    else:
+        for category, games in raw_categories.items():
+            unique_games = []
+            for game in games:
+                app_id = game.get('appid')
+                if app_id and app_id not in seen_ids:
+                    seen_ids.add(app_id)
+                    unique_games.append(game)
+            categories[category] = unique_games
+
+        category_titles = {
+            'globaltopsellers': 'Global Top Sellers',
+            'specials': 'Special Offers',
+            'popularcomingsoon': 'Popular: Coming Soon',
+            'topsellers': 'Top Sellers',
+            'popularnew': 'Popular: New'
+        }
 
     return render_template(
         'index.html',
@@ -51,35 +76,45 @@ def index():
         category_titles=category_titles
     )
 
+
 @app.route('/search')
 def search():
-    return render_template('search.html')
+    search_type = request.args.get('type', 'default')
+    return render_template('search.html', search_type=search_type)
 
 @app.route('/api/search_app', methods=['GET'])
 def search_app():
-    app_id = request.args.get('id')
-    name = request.args.get('name')
+    q = request.args.get('q')
+    search_type = request.args.get('type', 'name')
 
     retriever = SteamDataRetriever()
 
-    if app_id:
-        try:
-            app_id = int(app_id)
-            app_details = retriever.get_app_details(app_id)
-            if app_details:
-                return jsonify(app_details)
-            else:
-                return jsonify({'error': f'App with ID {app_id} not found'}), 404
-        except ValueError:
-            return jsonify({'error': 'Invalid app ID format'}), 400
-    elif name:
-        search_results = retriever.search_apps_by_name(name)
-        if search_results:
-            return jsonify(search_results)
+    if not q:
+        return jsonify({'error': 'No query provided'}), 400
+
+    if search_type == 'name':
+        return jsonify(retriever.search_apps_by_name(q))
+
+    elif search_type == 'app-id':
+        if not q.isdigit():
+            return jsonify({'error': 'App ID must be numeric'}), 400
+        app_details = retriever.get_app_details(int(q))
+        if app_details:
+            return jsonify(app_details)
         else:
-            return jsonify({'message': f'No apps found matching "{name}"'}), 200
-    else:
-        return jsonify({'error': 'Please provide either an app ID or a name to search'}), 400
+            return jsonify({'error': f'App with ID {q} not found'}), 404
+
+    elif search_type == 'developer':
+        return jsonify(retriever.get_apps_by_developer(q))
+
+    elif search_type == 'genre':
+        return jsonify(retriever.get_apps_with_genre(q))
+
+    elif search_type == 'tag':
+        return jsonify(retriever.get_apps_with_tag(q))
+
+    return jsonify({'error': f'Unknown search type: {search_type}'}), 400
+
 
 @app.route('/analytics/genre-breakdown')
 def genre_breakdown():

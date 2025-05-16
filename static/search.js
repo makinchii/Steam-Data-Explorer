@@ -12,19 +12,19 @@ function doSearch(searchValue) {
   errors.innerHTML = '';
   results.innerHTML = '<div class="loading">Searching…</div>';
 
-  const isNumeric = /^\d+$/.test(searchValue);
-  const p = new URLSearchParams();
-  if (isNumeric) p.append('id', searchValue);
-  else          p.append('name', searchValue);
+  const searchType = document.getElementById('search-type')?.value || 'default';
 
-  fetch(`/api/search_app?${p}`)
+  const params = new URLSearchParams();
+  params.append('q', searchValue);
+  params.append('type', searchType);
+
+  fetch(`/api/search_app?${params}`)
     .then(r => r.json())
     .then(data => {
       results.innerHTML = '';
       if (data.error) return showError(data.error);
       if (Array.isArray(data)) return displayResults(data);
-      // single‐object case
-      return displayResults([data]);
+      return displayResults([data]); // single-object fallback
     })
     .catch(e => showError(`Search error: ${e.message}`));
 }
