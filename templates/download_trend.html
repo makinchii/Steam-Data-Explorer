@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Downloading… – Steam Data Explorer{% endblock %}
+
+{% block content %}
+  <div class="main-content">
+    <div class="download-container">
+      <h2 class="section-title">Downloading Steam Trend Data…</h2>
+        <div class="progress-container">
+          <div class="progress-wrapper">
+            <progress id="progress-bar" class="progress-bar" max="100" value="0"></progress>
+            <span id="bar-text" class="bar-text">0 / 0</span>
+          </div>
+
+          <div class="bottom-row">
+              <p id="eta-text" class="eta-text">Time to Finish: calculating…</p>
+              <button id="toggle-btn" class="btn-toggle">Pause</button>
+          </div>
+          </div>
+        </div>
+      <div>
+        <h3 class=""
+      </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='download_trend.js') }}"></script>
+{% endblock %}

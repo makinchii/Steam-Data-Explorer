@@ -1,11 +1,11 @@
 from collections import Counter
-
-from flask import Flask, render_template, jsonify, request
+from pyscripts.steam_data_downloader import download_all_apps
 from pyscripts.steam_data_retriever import SteamDataRetriever
+from pyscripts.steam_trending_data_downloader import download_trend
+from flask import Flask, render_template, jsonify, request
 from pathlib import Path
-
+import threading
 app = Flask(__name__)
-
 @app.route('/')
 def index():
     search_base = Path('checkpoints') / 'searchresults'
@@ -54,28 +54,41 @@ def index():
         }
     else:
         for category, games in raw_categories.items():
+
             unique_games = []
             for game in games:
+
+                if len(unique_games) > 6:
+                    break
+
                 app_id = game.get('appid')
-                if app_id and app_id not in seen_ids:
+                appdetails = retriever.get_app_details(app_id)
+
+                if appdetails == None:
+                    continue
+
+                if app_id and app_id not in seen_ids :
                     seen_ids.add(app_id)
-                    unique_games.append(game)
+                    unique_games.append(appdetails)
+
             categories[category] = unique_games
 
         category_titles = {
             'globaltopsellers': 'Global Top Sellers',
             'specials': 'Special Offers',
-            'popularcomingsoon': 'Popular: Coming Soon',
+            'popularcommingsoon': 'Popular: Coming Soon',
             'topsellers': 'Top Sellers',
             'popularnew': 'Popular: New'
         }
 
+    has_trending = bool(raw_categories) and not request.args.get('q')
+
     return render_template(
         'index.html',
         categories=categories,
-        category_titles=category_titles
+        category_titles=category_titles,
+        has_trending=has_trending
     )
-
 
 @app.route('/search')
 def search():
@@ -93,7 +106,7 @@ def search_app():
         return jsonify({'error': 'No query provided'}), 400
 
     if search_type == 'name':
-        return jsonify(retriever.search_apps_by_name(q))
+        return jsonify(retriever.get_apps_by_name(q))
 
     elif search_type == 'app-id':
         if not q.isdigit():
@@ -198,6 +211,107 @@ def price_analysis():
                 bins["$70+"] += 1
 
     return render_template('price.html', price_buckets=bins)
+
+APP_EVENT = threading.Event()
+TREND_EVENT = threading.Event()
+
+APP_PROGRESS = {
+    "total":   0,
+    "done":    0,
+    "status":  "idle"
+}
+
+TREND_PROGRESS = {
+    "total":   0,
+    "done":    0,
+    "status":  "idle"
+}
+
+@app.route('/api/download_app_data', methods=['POST'])
+def trigger_app_download():
+    # only start if not already running
+    if APP_PROGRESS["status"] == "running" or (TREND_PROGRESS["status"] == "running"):
+        return jsonify({"message": "Already running"}), 409
+
+    def _background():
+        def progress_cb(total, done, status):
+            APP_PROGRESS["total"]  = total
+            APP_PROGRESS["done"]   = done
+            APP_PROGRESS["status"] = status
+
+        download_all_apps(progress_callback=progress_cb, stop_event=APP_EVENT)
+        APP_PROGRESS["status"] = "completed"
+
+    # reset & start thread
+    is_resume = (APP_PROGRESS["status"] == "paused")
+    if not is_resume:
+        APP_PROGRESS["total"] = 0
+        APP_PROGRESS["done"] = 0
+    APP_PROGRESS["status"] = "starting"
+    APP_EVENT.clear()
+
+    thread = threading.Thread(target=_background, daemon=True)
+    thread.start()
+
+    return jsonify({"message": "Download started"}), 202
+
+@app.route('/api/stop_app_download', methods=['POST'])
+def stop_app_download():
+    APP_EVENT.set()
+    APP_PROGRESS['status'] = 'paused'
+    return jsonify({'message': 'Download paused'}), 200
+
+
+@app.route('/api/download_app_progress')
+def download_app_progress():
+    return jsonify(APP_PROGRESS)
+
+@app.route('/download_app')
+def download_app_page():
+    return render_template('download_app.html')
+
+@app.route('/api/download_trend_data', methods=['POST'])
+def trigger_trend_download():
+    # only start if not already running
+    if APP_PROGRESS["status"] == "running" or (TREND_PROGRESS["status"] == "running"):
+        return jsonify({"message": "Already running"}), 409
+
+    def _background():
+        def progress_cb(total, done, status):
+            TREND_PROGRESS["total"]  = total
+            TREND_PROGRESS["done"]   = done
+            TREND_PROGRESS["status"] = status
+
+        download_trend(progress_callback=progress_cb, stop_event=TREND_EVENT)
+        TREND_PROGRESS["status"] = "completed"
+
+    # reset & start thread
+    is_resume = (TREND_PROGRESS["status"] == "paused")
+    if not is_resume:
+        TREND_PROGRESS["total"] = 0
+        TREND_PROGRESS["done"] = 0
+    TREND_PROGRESS["status"] = "starting"
+    TREND_EVENT.clear()
+
+    thread = threading.Thread(target=_background, daemon=True)
+    thread.start()
+
+    return jsonify({"message": "Download started"}), 202
+
+@app.route('/api/stop_trend_download', methods=['POST'])
+def stop_trend_download():
+    TREND_EVENT .set()
+    TREND_PROGRESS['status'] = 'paused'
+    return jsonify({'message': 'Download paused'}), 200
+
+
+@app.route('/api/download_trend_progress')
+def download_trend_progress():
+    return jsonify(TREND_PROGRESS)
+
+@app.route('/download_trend')
+def download_trend_page():
+    return render_template('download_trend.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

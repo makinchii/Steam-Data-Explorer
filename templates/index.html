@@ -7,53 +7,71 @@
   <div id="content-area">
     <div id="error-container"></div>
 
-    {% for category, games in categories.items() %}
-      <section class="category-section">
-        <div class="section-title">{{ category_titles[category] }}</div>
+    {% if not has_trending %}
+        <div class="no-data-prompt">
+          <p>You haven’t downloaded any trending data yet.</p>
+          <button
+            class="btn-steam btn-large"
+            onclick="window.location.href='{{ url_for('download_trend_page') }}'">
+            Go to Download Data to get started!
+          </button>
+        </div>
 
-        {% if games %}
-          {# Featured card with border removed #}
-          {# Featured Game #}
-          {% set featured = games[0] %}
-          <div class="featured-game game-card"
-               data-appid="{{ featured.appid }}">
-            <div class="game-image">
-              {% if featured.appdetail and featured.appdetail.success %}
-                <img src="{{ featured.appdetail.data.header_image }}" alt="{{ featured.name }}">
-              {% else %}
-                <img src="{{ featured.logo }}" alt="{{ featured.name }}">
-              {% endif %}
-            </div>
-            <div class="game-info">
-              <h3>{{ featured.name }}</h3>
-              <h3>{{ featured.price_overview }}</h3>
-            </div>
-          </div>
+    {% else %}
+      {% for category, games in categories.items() %}
+        <section class="category-section">
+          <div class="section-title">{{ category_titles[category] }}</div>
 
-          {# Sub-Games #}
-          <div class="sub-games">
-            {% for game in games[1:5] %}
-              <div class="sub-game-card game-card"
-                   data-appid="{{ game.appid }}">
-                <div class="game-image">
-                  {% if game.appdetail and game.appdetail.success and game.appdetail.data.capsule %}
-                    <img src="{{ game.appdetail.data.capsule }}" alt="{{ game.name }}">
-                  {% elif game.appdetail and game.appdetail.success %}
-                    <img src="{{ game.appdetail.data.header_image }}" alt="{{ game.name }}">
-                  {% else %}
-                    <img src="{{ game.logo }}" alt="{{ game.name }}">
-                  {% endif %}
-                </div>
-                <div class="game-info">
-                  <p class="game-name">{{ game.name }}</p>
-                </div>
+          {% if games %}
+            {# Featured Game #}
+            {% set featured = games[0] %}
+            {% set desc     = featured.short_description %}
+            {% set shots    = featured.screenshots %}
+            {% if shots and shots|length > 0 %}
+              {% set img_url = shots[0].path_full %}
+            {% endif %}
+            {% set hdr_url = featured.header_image or featured.logo %}
+            <div class="featured-game game-card"
+                 data-appid="{{ featured.steam_appid }}"
+                 data-name="{{ featured.name|e }}"
+                 data-screenshot="{{ img_url }}"
+                 data-desc="{{ desc|e }}">
+              <div class="game-image">
+                <img src="{{ hdr_url }}" alt="{{ featured.name }}">
               </div>
-            {% endfor %}
-          </div>
+              <div class="game-info">
+                <h3>{{ featured.name }}</h3>
+              </div>
+            </div>
 
-        {% endif %}
-      </section>
-    {% endfor %}
+            {# Sub-Games #}
+            <div class="sub-games">
+              {% for game in games[1:5] %}
+                {% set desc  = game.short_description %}
+                {% set shots = game.screenshots %}
+                {% if shots and shots|length > 0 %}
+                  {% set img_url = shots[0].path_full %}
+                {% endif %}
+                  {% set hdr_url = game.header_image or game.logo %}
+
+                <div class="sub-game-card game-card"
+                     data-appid="{{ game.steam_appid }}"
+                     data-name="{{ game.name|e }}"
+                     data-screenshot="{{ img_url }}"
+                     data-desc="{{ desc|e }}">
+                  <div class="game-image">
+                    <img src="{{ hdr_url }}" alt="{{ game.name }}">
+                  </div>
+                  <div class="game-info">
+                    <p class="game-name">{{ game.name }}</p>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </section>
+      {% endfor %}
+    {% endif %}
 
   </div>
 </div>

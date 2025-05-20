@@ -6,29 +6,25 @@ from datetime import datetime
 
 
 def print_log(*args):
-    """Print log with timestamp."""
     print(f"[{str(datetime.now())[:-3]}] ", end="")
     print(*args)
 
 
 class SteamDataRetriever:
     def __init__(self, checkpoint_folder: str = 'checkpoints', search_data_folder: Optional[str] = None):
-        """
-        Initialize the SteamDataRetriever with:
-          - checkpoint_folder: where your app-details checkpoints live
-          - search_data_folder: where your category pickles live (optional)
-        """
+
         self.checkpoint_folder  = Path(checkpoint_folder).resolve()
         self.search_data_folder = Path(search_data_folder).resolve() if search_data_folder else None
 
         self.apps_dict            = {}
         self.excluded_apps_list   = []
+        self.error_apps_list = []
 
         self.search_categories = [
             'topsellers',
             'globaltopsellers',
             'popularnew',
-            'popularcomingsoon',
+            'popularcommingsoon',
             'specials'
         ]
 
@@ -40,7 +36,6 @@ class SteamDataRetriever:
             return pickle.load(handle)
 
     def _load_latest_checkpoints(self) -> None:
-        """Load the latest checkpoint files."""
 
         # Prefixes for the checkpoint files
         apps_dict_filename_prefix = 'apps_dict'
@@ -71,18 +66,7 @@ class SteamDataRetriever:
 
     def _check_latest_checkpoints(self, checkpoint_folder, apps_dict_filename_prefix,
                                   exc_apps_filename_prefix, error_apps_filename_prefix):
-        """
-        Find the latest checkpoint files for each type.
 
-        Args:
-            checkpoint_folder: Path to the folder containing checkpoint files
-            apps_dict_filename_prefix: Prefix for apps dict files
-            exc_apps_filename_prefix: Prefix for excluded apps files
-            error_apps_filename_prefix: Prefix for error apps files
-
-        Returns:
-            Tuple of paths to the latest checkpoint files (apps_dict, excluded_apps, error_apps)
-        """
         latest_apps_dict_ckpt_path = None
         latest_exc_apps_list_ckpt_path = None
         latest_error_apps_list_ckpt_path = None
@@ -140,9 +124,6 @@ class SteamDataRetriever:
         return self._load_pickle(path)
 
     def load_all_search_results(self) -> Dict[str, List[Dict[str, Any]]]:
-        """
-        Return a dict mapping each category name to its list of games.
-        """
         return {
             cat: self.load_search_category(cat)
             for cat in self.search_categories
@@ -169,10 +150,11 @@ class SteamDataRetriever:
         """
 
         if app_id in self.apps_dict.keys():
-            return self.apps_dict[app_id]
+                if self.apps_dict[app_id].get('name'):
+                    return self.apps_dict[app_id]
         return None
 
-    def search_apps_by_name(self, search_term: str) -> List[Dict]:
+    def get_apps_by_name(self, search_term: str) -> List[Dict]:
         """
         Search for apps by name.
 
@@ -184,6 +166,8 @@ class SteamDataRetriever:
         """
         search_term = search_term.lower()
         results = []
+
+
 
         for app_id, app_data in self.apps_dict.items():
             if 'name' in app_data and search_term in app_data['name'].lower():
@@ -335,21 +319,54 @@ class SteamDataRetriever:
             'error_apps': len(self.error_apps_list)
         }
 
+    def clean_and_save_apps_dict(self) -> int:
+
+        apps_prefix = 'apps_dict'
+        apps_ckpt_path, _, _ = self._check_latest_checkpoints(
+            self.checkpoint_folder,
+            apps_prefix,
+            'excluded_apps_list',
+            'error_apps_list'
+        )
+        if not apps_ckpt_path or not apps_ckpt_path.exists():
+            raise FileNotFoundError(f"No apps_dict checkpoint found under {self.checkpoint_folder}")
+
+        print(apps_ckpt_path)
+
+        data: Dict[int, Any] = self._load_pickle(apps_ckpt_path)
+
+        to_remove = [
+            app_id
+            for app_id, entry in data.items()
+            if entry is None
+               or not isinstance(entry, dict)
+               or not entry.get('name')
+        ]
+
+        for app_id in to_remove:
+            data.pop(app_id, None)
+            if app_id not in self.excluded_apps_list:
+                self.excluded_apps_list.append(app_id)
+
+        # 4) write the cleaned dict back
+        with open(apps_ckpt_path, 'wb') as f:
+            pickle.dump(data, f)
+
+        # 5) update in-memory apps_dict and log
+        self.apps_dict = data
+        print_log(f"clean_and_save_apps_dict: removed {len(to_remove)} entries from {apps_ckpt_path.name}")
+
+        return len(to_remove)
+
+
 def test_search():
 
-    retriever = SteamDataRetriever("../checkpoints")
-    id = 440
-    app_details = retriever.get_app_details(id)
-    print(app_details)
+    retriever = SteamDataRetriever("../checkpoints", '../checkpoints/search_results_20250519')
+    print(retriever.get_apps_by_name('Stardew Valley'))
+    print(retriever.get_apps_by_name('Gunfire Reborn'))
+    print(retriever.get_app_details(413150))
+    print(retriever.get_app_details(1217060))
 
-    print(retriever.apps_dict)
-
-    if app_details:
-        print_log(retriever.search_apps_by_name(app_details.get('name')))
-        for developer in app_details.get('developers'):
-            print_log(retriever.get_apps_by_developer(developer))
-    else:
-        print_log(f"Could not retrieve details for app {id}.")
 
 if __name__ == "__main__":
     test_search()
